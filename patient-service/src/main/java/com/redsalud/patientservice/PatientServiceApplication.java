@@ -1,4 +1,4 @@
-package com.redsalud.patient_service;
+package com.redsalud.patientservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
