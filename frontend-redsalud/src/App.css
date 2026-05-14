@@ -1,0 +1,16 @@
+:root { font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif; background-color: #f4f7f6; }
+.container { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+header { text-align: center; margin-bottom: 2rem; color: #2c3e50; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.card { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+h2 { color: #34495e; border-bottom: 2px solid #3498db; padding-bottom: 0.5rem; }
+table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
+th { background-color: #f8f9fa; }
+.status { background: #e1f5fe; color: #01579b; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+
+.form-section { margin-bottom: 2rem; }
+.form-inline { display: flex; gap: 10px; flex-wrap: wrap; }
+.form-inline input { padding: 10px; border: 1px solid #ddd; border-radius: 6px; flex: 1; }
+.form-inline button { padding: 10px 20px; background-color: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+.form-inline button:hover { background-color: #2980b9; }
