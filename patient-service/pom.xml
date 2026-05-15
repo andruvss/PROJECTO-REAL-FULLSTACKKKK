@@ -19,6 +19,14 @@
     </properties>
 
     <dependencies>
+          <!--DEPENDENCIA PARA LA APISWAGGER OPEN API-->
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>2.5.0</version>
+            </dependency>
+
+         
         <!-- Web: Para crear la API REST -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

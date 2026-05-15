@@ -35,6 +35,14 @@ public class Request {
     
     private String description;
 
+    public Long getPatientId() {
+        return patientId;
+    }
+
+    public void setPatientId(Long patientId) {
+        this.patientId = patientId;
+    }
+
     @PrePersist
     protected void onCreate() {
         this.registrationDate = LocalDateTime.now(); // [cite: 67]

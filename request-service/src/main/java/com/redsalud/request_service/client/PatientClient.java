@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 // Este es tu "Adapter" para comunicarte con el MS de Pacientes [cite: 62]
-@FeignClient(name = "patient-service", url = "http://localhost:8080")
+@FeignClient(name = "patient-service", url = "http://localhost:8081")
 public interface PatientClient {
 
     @GetMapping("/api/patients/{id}")
