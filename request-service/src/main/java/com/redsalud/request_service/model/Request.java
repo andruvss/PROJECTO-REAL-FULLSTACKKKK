@@ -3,18 +3,10 @@ package com.redsalud.request_service.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "requests")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Request {
 
     @Id
@@ -22,32 +14,46 @@ public class Request {
     private Long id;
 
     @NotNull(message = "El ID del paciente es obligatorio")
-    private Long patientId; // [cite: 65]
+    private Long patientId;
 
     @NotBlank(message = "La especialidad médica es obligatoria")
-    private String medicalSpecialty; // [cite: 66]
+    private String medicalSpecialty;
 
-    @NotNull
-    private LocalDateTime registrationDate; // [cite: 67]
+    private LocalDateTime registrationDate;
 
-    @NotBlank
-    private String status; // Usamos String: REGISTERED, IN_WAITING_LIST, etc. [cite: 68, 70]
+    private String status;
     
     private String description;
 
-    public Long getPatientId() {
-        return patientId;
-    }
-
-    public void setPatientId(Long patientId) {
-        this.patientId = patientId;
-    }
-
+    // Métodos para persistencia automática
     @PrePersist
     protected void onCreate() {
-        this.registrationDate = LocalDateTime.now(); // [cite: 67]
+        this.registrationDate = LocalDateTime.now();
         if (this.status == null) {
-            this.status = "REGISTERED"; // Estado inicial por defecto [cite: 70]
+            this.status = "REGISTERED";
         }
     }
+
+    // --- GETTERS Y SETTERS MANUALES ---
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Long getPatientId() { return patientId; }
+    public void setPatientId(Long patientId) { this.patientId = patientId; }
+
+    public String getMedicalSpecialty() { return medicalSpecialty; }
+    public void setMedicalSpecialty(String medicalSpecialty) { this.medicalSpecialty = medicalSpecialty; }
+
+    public LocalDateTime getRegistrationDate() { return registrationDate; }
+    public void setRegistrationDate(LocalDateTime registrationDate) { this.registrationDate = registrationDate; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    // Constructor vacío obligatorio para JPA
+    public Request() {}
 }
