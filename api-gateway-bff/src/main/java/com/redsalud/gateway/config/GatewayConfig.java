@@ -24,15 +24,15 @@ public class GatewayConfig {
                                 .dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_FIRST"))
                         .uri("http://localhost:8082"))
 
-                // 3. Ruta de Lista de Espera (waiting-list-service)
-                .route("waiting-list-service", r -> r.path("/api/waiting-list/**")
-                        .filters(f -> f.dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_FIRST"))
-                        .uri("http://localhost:8083"))
-
-                // 4. Ruta técnica para la documentación de la Lista de Espera (CORREGIDA)
+                // 3. Ruta de Lista de Espera Técnica (v3/api-docs) - DEBE IR PRIMERO QUE EL COMODÍN GENERAL
                 .route("waiting-list-docs", r -> r.path("/api/waiting-list/v3/api-docs")
                         .filters(f -> f.rewritePath("/api/waiting-list/v3/api-docs", "/v3/api-docs")
                                 .dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_FIRST"))
+                        .uri("http://localhost:8083"))
+
+                // 4. Ruta de Lista de Espera del negocio (comodín general)
+                .route("waiting-list-service", r -> r.path("/api/waiting-list/**")
+                        .filters(f -> f.dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_FIRST"))
                         .uri("http://localhost:8083"))
                 .build();
     }
