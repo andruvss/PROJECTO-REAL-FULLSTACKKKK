@@ -5,8 +5,13 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
+<<<<<<< HEAD
         <version>3.3.5</version>
         <relativePath/>
+=======
+        <version>3.3.0</version>
+        <relativePath/> 
+>>>>>>> 69f52dd17fdeeac74ce9e6b427a39624c6af3909
     </parent>
     <groupId>com.redsalud</groupId>
     <artifactId>patient-service</artifactId>
@@ -21,7 +26,12 @@
     </properties>
 
     <dependencies>
+<<<<<<< HEAD
         <!-- OpenAPI / Swagger -->
+=======
+        
+        <!-- Swagger / OpenAPI UI -->
+>>>>>>> 69f52dd17fdeeac74ce9e6b427a39624c6af3909
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
@@ -47,6 +57,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <version>1.18.32</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -80,6 +91,7 @@
     </dependencyManagement>
 
     <build>
+<<<<<<< HEAD
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -128,3 +140,23 @@
         </plugins>
     </build>
 </project>
+=======
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.1</version> <!-- Versión más estable para evitar el bug de TypeTag -->
+            <configuration>
+                <source>17</source>
+                <target>17</target>
+                <!-- Eliminamos CUALQUIER rastro de annotationProcessorPaths -->
+            </configuration>
+        </plugin>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+        </plugin>
+    </plugins>
+</build>
+</project>
+>>>>>>> 69f52dd17fdeeac74ce9e6b427a39624c6af3909
