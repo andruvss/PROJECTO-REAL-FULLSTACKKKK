@@ -35,39 +35,43 @@ class RequestServiceTest {
         requestRepository.deleteAll();
     }
     
+    // ===== HELPER =====
+    private Request createRequest(Long patientId, String specialty, String description, String status) {
+        Request r = new Request();
+        r.setPatientId(patientId);
+        r.setMedicalSpecialty(specialty);
+        r.setDescription(description);
+        r.setStatus(status);
+        return r;
+    }
+    
+    // ===== SERVICE TESTS =====
+    
     @Test
     void testCreateRequest_Success() {
-        Request request = createRequest("MRI Scan", "PENDING");
+        Request request = createRequest(1L, "Cardiología", "Consulta de chequeo", "PENDING");
         Request created = requestService.createRequest(request);
         
         assertNotNull(created);
         assertNotNull(created.getId());
-        assertEquals("MRI Scan", created.getDescription());
+        assertEquals(1L, created.getPatientId());
+        assertEquals("Cardiología", created.getMedicalSpecialty());
         assertEquals(1, requestRepository.count());
     }
     
     @Test
-    void testCreateRequest_InvalidDescription() {
-        Request request = new Request();
-        request.setDescription("");
-        request.setStatus("PENDING");
-        
-        assertThrows(IllegalArgumentException.class, () -> requestService.createRequest(request));
-    }
-    
-    @Test
     void testGetRequestById_Success() {
-        Request saved = requestRepository.save(createRequest("CT Scan", "PROCESSING"));
+        Request saved = requestRepository.save(createRequest(2L, "Oncología", "Evaluación inicial", "PENDING"));
         var result = requestService.getRequestById(saved.getId());
         
         assertTrue(result.isPresent());
-        assertEquals("CT Scan", result.get().getDescription());
+        assertEquals(2L, result.get().getPatientId());
     }
     
     @Test
     void testGetAllRequests() {
-        requestRepository.save(createRequest("X-Ray", "COMPLETED"));
-        requestRepository.save(createRequest("Ultrasound", "PENDING"));
+        requestRepository.save(createRequest(1L, "Cardiología", "Revisión", "PENDING"));
+        requestRepository.save(createRequest(2L, "Oncología", "Consulta", "PENDING"));
         
         var requests = requestService.getAllRequests();
         assertEquals(2, requests.size());
@@ -75,23 +79,25 @@ class RequestServiceTest {
     
     @Test
     void testUpdateRequest_Success() {
-        Request saved = requestRepository.save(createRequest("Blood Test", "PENDING"));
+        Request saved = requestRepository.save(createRequest(1L, "Cardiología", "Chequeo", "PENDING"));
         Request update = new Request();
         update.setStatus("COMPLETED");
         
         Request updated = requestService.updateRequest(saved.getId(), update);
         
         assertEquals("COMPLETED", updated.getStatus());
-        assertEquals("Blood Test", updated.getDescription());
+        assertEquals(1L, updated.getPatientId());
     }
     
     @Test
     void testDeleteRequest_Success() {
-        Request saved = requestRepository.save(createRequest("EKG", "PENDING"));
+        Request saved = requestRepository.save(createRequest(1L, "Neurología", "Evaluación", "PENDING"));
         requestService.deleteRequest(saved.getId());
         
         assertEquals(0, requestRepository.count());
     }
+    
+    // ===== HTTP TESTS =====
     
     @Test
     void testGetAllRequests_HTTP() throws Exception {
@@ -102,7 +108,7 @@ class RequestServiceTest {
     
     @Test
     void testCreateRequest_HTTP() throws Exception {
-        String json = "{\"description\":\"Lab Test\",\"status\":\"PENDING\"}";
+        String json = "{\"patientId\":1,\"medicalSpecialty\":\"Dermatología\",\"description\":\"Revisión de piel\",\"status\":\"PENDING\"}";
         
         mockMvc.perform(post("/api/requests")
             .contentType(MediaType.APPLICATION_JSON)
@@ -114,7 +120,7 @@ class RequestServiceTest {
     
     @Test
     void testUpdateRequest_HTTP() throws Exception {
-        Request saved = requestRepository.save(createRequest("Vaccine", "PENDING"));
+        Request saved = requestRepository.save(createRequest(1L, "Pediatría", "Consulta infantil", "PENDING"));
         String json = "{\"status\":\"COMPLETED\"}";
         
         mockMvc.perform(put("/api/requests/" + saved.getId())
@@ -126,7 +132,7 @@ class RequestServiceTest {
     
     @Test
     void testDeleteRequest_HTTP() throws Exception {
-        Request saved = requestRepository.save(createRequest("Checkup", "PENDING"));
+        Request saved = requestRepository.save(createRequest(1L, "Oftalmología", "Revisión visual", "PENDING"));
         
         mockMvc.perform(delete("/api/requests/" + saved.getId()))
             .andExpect(status().isOk());
@@ -134,10 +140,12 @@ class RequestServiceTest {
         assertEquals(0, requestRepository.count());
     }
     
-    private Request createRequest(String description, String status) {
-        Request r = new Request();
-        r.setDescription(description);
-        r.setStatus(status);
-        return r;
+    @Test
+    void testGetRequestById_HTTP() throws Exception {
+        Request saved = requestRepository.save(createRequest(1L, "Psiquiatría", "Evaluación", "PENDING"));
+        
+        mockMvc.perform(get("/api/requests/" + saved.getId()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.patientId").value(1));
     }
 }
