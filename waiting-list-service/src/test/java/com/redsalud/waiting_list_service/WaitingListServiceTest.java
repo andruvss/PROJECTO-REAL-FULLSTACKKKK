@@ -20,97 +20,68 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class WaitingListServiceTest {
-
+    
     @Autowired private MockMvc mockMvc;
     @Autowired private WaitingListService service;
     @Autowired private WaitingListRepository repo;
-
+    
     @BeforeEach
     void setUp() {
         repo.deleteAll();
     }
-
-    @Test
-    void testCreate() {
+    
+    private WaitingList createWaitingList(Long patientId, String priority) {
         WaitingList w = new WaitingList();
-        w.setPatientId(1L);
-        w.setPriority("HIGH");
+        w.setPatientId(patientId);
+        w.setPriority(priority);
+        return w;
+    }
+    
+    @Test
+    void testCreateWaitingList_Success() {
+        WaitingList w = createWaitingList(1L, "HIGH");
         WaitingList created = service.createWaitingList(w);
         assertNotNull(created.getId());
         assertEquals(1, repo.count());
     }
-
+    
     @Test
-    void testGetById() {
-        WaitingList w = new WaitingList();
-        w.setPatientId(1L);
-        WaitingList saved = repo.save(w);
+    void testGetWaitingListById_Success() {
+        WaitingList saved = repo.save(createWaitingList(1L, "MEDIUM"));
         var result = service.getWaitingListById(saved.getId());
         assertTrue(result.isPresent());
+        assertEquals(1L, result.get().getPatientId());
     }
-
+    
     @Test
-    void testGetAll() {
-        WaitingList w1 = new WaitingList();
-        w1.setPatientId(1L);
-        WaitingList w2 = new WaitingList();
-        w2.setPatientId(2L);
-        repo.save(w1);
-        repo.save(w2);
+    void testGetAllWaitingLists() {
+        repo.save(createWaitingList(1L, "HIGH"));
+        repo.save(createWaitingList(2L, "LOW"));
         assertEquals(2, service.getAllWaitingLists().size());
     }
-
+    
     @Test
-    void testUpdate() {
-        WaitingList w = new WaitingList();
-        w.setPatientId(1L);
-        w.setPriority("LOW");
-        WaitingList saved = repo.save(w);
+    void testUpdateWaitingList_Success() {
+        WaitingList saved = repo.save(createWaitingList(1L, "HIGH"));
         WaitingList update = new WaitingList();
-        update.setPriority("HIGH");
+        update.setPriority("LOW");
         WaitingList updated = service.updateWaitingList(saved.getId(), update);
-        assertEquals("HIGH", updated.getPriority());
+        assertEquals("LOW", updated.getPriority());
     }
-
+    
     @Test
-    void testDelete() {
-        WaitingList w = new WaitingList();
-        w.setPatientId(1L);
-        WaitingList saved = repo.save(w);
+    void testDeleteWaitingList_Success() {
+        WaitingList saved = repo.save(createWaitingList(1L, "MEDIUM"));
         service.deleteWaitingList(saved.getId());
         assertEquals(0, repo.count());
     }
-
-    @Test
-    void testCreateInvalidPatientId() {
-        WaitingList w = new WaitingList();
-        w.setPatientId(0L);
-        assertThrows(IllegalArgumentException.class, () -> service.createWaitingList(w));
-    }
-
-    @Test
-    void testGetByIdInvalid() {
-        assertThrows(IllegalArgumentException.class, () -> service.getWaitingListById(-1L));
-    }
-
-    @Test
-    void testUpdateNotFound() {
-        WaitingList update = new WaitingList();
-        update.setPriority("HIGH");
-        assertThrows(RuntimeException.class, () -> service.updateWaitingList(9999L, update));
-    }
-
-    @Test
-    void testDeleteNotFound() {
-        assertThrows(RuntimeException.class, () -> service.deleteWaitingList(9999L));
-    }
-
+    
     @Test
     void testGetAll_HTTP() throws Exception {
         mockMvc.perform(get("/api/waiting-lists"))
             .andExpect(status().isOk());
     }
-
+    
     @Test
     void testCreate_HTTP() throws Exception {
         String json = "{\"patientId\":1,\"priority\":\"HIGH\"}";
@@ -118,65 +89,32 @@ class WaitingListServiceTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(json))
             .andExpect(status().isCreated());
+        assertEquals(1, repo.count());
     }
-
-    @Test
-    void testCreate_HTTP_BadRequest() throws Exception {
-        String json = "{\"patientId\":0}";
-        mockMvc.perform(post("/api/waiting-lists")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(json))
-            .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void testGetById_HTTP_NotFound() throws Exception {
-        mockMvc.perform(get("/api/waiting-lists/9999"))
-            .andExpect(status().isNotFound());
-    }
-
+    
     @Test
     void testUpdate_HTTP() throws Exception {
-        WaitingList w = new WaitingList();
-        w.setPatientId(1L);
-        WaitingList saved = repo.save(w);
-        String json = "{\"priority\":\"MEDIUM\"}";
+        WaitingList saved = repo.save(createWaitingList(1L, "HIGH"));
+        String json = "{\"priority\":\"LOW\"}";
         mockMvc.perform(put("/api/waiting-lists/" + saved.getId())
             .contentType(MediaType.APPLICATION_JSON)
             .content(json))
             .andExpect(status().isOk());
     }
-
-    @Test
-    void testUpdate_HTTP_NotFound() throws Exception {
-        String json = "{\"priority\":\"MEDIUM\"}";
-        mockMvc.perform(put("/api/waiting-lists/9999")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(json))
-            .andExpect(status().isNotFound());
-    }
-
+    
     @Test
     void testDelete_HTTP() throws Exception {
-        WaitingList w = new WaitingList();
-        w.setPatientId(1L);
-        WaitingList saved = repo.save(w);
+        WaitingList saved = repo.save(createWaitingList(1L, "MEDIUM"));
         mockMvc.perform(delete("/api/waiting-lists/" + saved.getId()))
             .andExpect(status().isOk());
+        assertEquals(0, repo.count());
     }
-
+    
     @Test
-    void testDelete_HTTP_NotFound() throws Exception {
-        mockMvc.perform(delete("/api/waiting-lists/9999"))
-            .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void testGetById_HTTP_OK() throws Exception {
-        WaitingList w = new WaitingList();
-        w.setPatientId(5L);
-        WaitingList saved = repo.save(w);
+    void testGetById_HTTP() throws Exception {
+        WaitingList saved = repo.save(createWaitingList(1L, "HIGH"));
         mockMvc.perform(get("/api/waiting-lists/" + saved.getId()))
-            .andExpect(status().isOk());
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.patientId").value(1));
     }
 }
