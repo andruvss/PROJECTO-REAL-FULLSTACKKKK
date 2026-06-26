@@ -122,7 +122,7 @@ function App() {
           <table>
             <thead><tr><th>ID</th><th>Nombre</th><th>RUT</th></tr></thead>
             <tbody>
-              {patients.map(p => (<tr key={p.id}><td>{p.id}</td><td>{p.name}</td><td>{p.rut}</td></tr>))}
+              {patients.map(p => (<tr key={p.id}><td>{p.id}</td><td>{p.firstName} {p.lastName}</td><td>{p.rut}</td></tr>))}
             </tbody>
           </table>
         </section>

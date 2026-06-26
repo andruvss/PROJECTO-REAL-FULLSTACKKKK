@@ -1,68 +1,59 @@
 package com.redsalud.request_service.service;
 
-import com.redsalud.request_service.client.PatientClient;
 import com.redsalud.request_service.model.Request;
 import com.redsalud.request_service.repository.RequestRepository;
-import feign.FeignException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
+@Transactional
 public class RequestService {
-
-    // Creamos el Logger para esta clase
-    private static final Logger logger = LoggerFactory.getLogger(RequestService.class);
-
+    
     @Autowired
     private RequestRepository requestRepository;
-
-    @Autowired
-    private PatientClient patientClient;
-
+    
     public Request createRequest(Request request) {
-        // Iniciamos el cronómetro
-        long startTime = System.currentTimeMillis();
-        
-        logger.info("Iniciando creación de solicitud para el paciente ID: {}", request.getPatientId());
-
-        try {
-            // Llamada al microservicio de pacientes (Puerto 8081)
-            patientClient.getPatientById(request.getPatientId());
-            
-            logger.info("Validación exitosa: El paciente existe.");
-
-        } catch (FeignException.NotFound ex) {
-            long duration = System.currentTimeMillis() - startTime;
-            logger.error("Fallo en la creación: Paciente {} no encontrado. Tiempo de respuesta: {} ms", 
-                         request.getPatientId(), duration);
-            throw new IllegalArgumentException("No se puede crear la solicitud: Paciente no encontrado");
-        } catch (Exception ex) {
-            logger.error("Error de comunicación con patient-service: {}", ex.getMessage());
-            throw new RuntimeException("Error técnico al validar el paciente");
+        if (request.getDescription() == null || request.getDescription().trim().isEmpty()) {
+            throw new IllegalArgumentException("Description is required");
         }
-
-        // Si todo sale bien, guardamos
-        Request savedRequest = requestRepository.save(request);
-        
-        // Calculamos el tiempo total final
-        long duration = System.currentTimeMillis() - startTime;
-        logger.info("Solicitud guardada con éxito (ID: {}). Tiempo total del proceso: {} ms", 
-                    savedRequest.getId(), duration);
-        
-        return savedRequest;
+        if (request.getStatus() == null || request.getStatus().trim().isEmpty()) {
+            throw new IllegalArgumentException("Status is required");
+        }
+        return requestRepository.save(request);
     }
-
+    
+    public Optional<Request> getRequestById(Long id) {
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("Request ID must be positive");
+        }
+        return requestRepository.findById(id);
+    }
+    
     public List<Request> getAllRequests() {
-        logger.info("Consultando todas las solicitudes registradas");
         return requestRepository.findAll();
     }
-
-    public List<Request> getRequestsByPatient(Long patientId) {
-        logger.info("Buscando solicitudes para el paciente ID: {}", patientId);
-        return requestRepository.findByPatientId(patientId);
+    
+    public Request updateRequest(Long id, Request requestDetails) {
+        Request request = requestRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Request not found with id: " + id));
+        
+        if (requestDetails.getDescription() != null && !requestDetails.getDescription().trim().isEmpty()) {
+            request.setDescription(requestDetails.getDescription());
+        }
+        if (requestDetails.getStatus() != null && !requestDetails.getStatus().trim().isEmpty()) {
+            request.setStatus(requestDetails.getStatus());
+        }
+        return requestRepository.save(request);
+    }
+    
+    public void deleteRequest(Long id) {
+        if (!requestRepository.existsById(id)) {
+            throw new RuntimeException("Request not found with id: " + id);
+        }
+        requestRepository.deleteById(id);
     }
 }
