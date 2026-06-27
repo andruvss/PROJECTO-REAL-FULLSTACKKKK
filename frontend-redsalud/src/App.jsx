@@ -60,12 +60,11 @@ function App() {
         });
         alert("Solicitud creada con éxito");
       } else {
-        await api.post('/waiting-list', null, {
-          params: {
-            patientId: parseInt(formData.patientId),
-            medicalSpecialty: formData.specialty,
-            priority: parseInt(formData.priority)
-          }
+        // CORREGIDO: Se envían los datos en el Body como JSON en vez de pasarse por Parámetros (Query Params)
+        await api.post('/waiting-list', {
+          patientId: parseInt(formData.patientId),
+          medicalSpecialty: formData.specialty,
+          priority: parseInt(formData.priority)
         });
         alert("Paciente añadido a la Lista de Espera");
       }
@@ -101,22 +100,53 @@ function App() {
         <section className="card form-section">
           <h2 className="section-title">📝 Registrar Nueva Acción Médica</h2>
           <form onSubmit={handleSubmit} className="form-inline">
-            <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
+            <select 
+              id="actionType"
+              name="actionType"
+              value={formData.type} 
+              onChange={e => setFormData({...formData, type: e.target.value})}
+            >
               <option value="request">Generar Solicitud</option>
               <option value="waiting">Ingresar a Lista de Espera</option>
             </select>
 
-            <input type="number" placeholder="ID Paciente" value={formData.patientId} 
-              onChange={e => setFormData({...formData, patientId: e.target.value})} required />
+            <input 
+              id="patientId"
+              name="patientId"
+              type="number" 
+              placeholder="ID Paciente" 
+              value={formData.patientId} 
+              onChange={e => setFormData({...formData, patientId: e.target.value})} 
+              required 
+            />
             
-            <input type="text" placeholder="Especialidad" value={formData.specialty} 
-              onChange={e => setFormData({...formData, specialty: e.target.value})} required />
+            <input 
+              id="specialty"
+              name="specialty"
+              type="text" 
+              placeholder="Especialidad" 
+              value={formData.specialty} 
+              onChange={e => setFormData({...formData, specialty: e.target.value})} 
+              required 
+            />
             
             {formData.type === 'request' ? (
-              <input type="text" placeholder="Descripción" value={formData.description} 
-                onChange={e => setFormData({...formData, description: e.target.value})} required />
+              <input 
+                id="description"
+                name="description"
+                type="text" 
+                placeholder="Descripción" 
+                value={formData.description} 
+                onChange={e => setFormData({...formData, description: e.target.value})} 
+                required 
+              />
             ) : (
-              <select value={formData.priority} onChange={e => setFormData({...formData, priority: e.target.value})}>
+              <select 
+                id="priority"
+                name="priority"
+                value={formData.priority} 
+                onChange={e => setFormData({...formData, priority: e.target.value})}
+              >
                 <option value="1">Prioridad 1 (Alta)</option>
                 <option value="2">Prioridad 2 (Media)</option>
                 <option value="3">Prioridad 3 (Baja)</option>

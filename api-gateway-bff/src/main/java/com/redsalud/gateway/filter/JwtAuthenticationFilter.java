@@ -16,6 +16,18 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
+            // Obtener la ruta de la petición actual
+            String path = exchange.getRequest().getURI().getPath();
+
+            // --- EXCLUSIÓN DE RUTAS PÚBLICAS ---
+            // Si la petición va al auth-service o a la documentación de Swagger, se deja pasar libremente
+            if (path.contains("/api/auth/") || 
+                path.contains("/v3/api-docs") || 
+                path.contains("/swagger-ui")) {
+                return chain.filter(exchange);
+            }
+            
+            // --- VALIDACIÓN DE TOKEN JWT ---
             // Obtener el token del header Authorization
             String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
             
@@ -33,18 +45,18 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
             
             String token = authHeader.substring(7);
             
-            // Validación básica del token (en producción usar JWT validation library)
+            // Validación básica de la longitud mínima del token
             if (token == null || token.isEmpty() || token.length() < 10) {
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                 return exchange.getResponse().setComplete();
             }
             
-            // Token válido, continuar
+            // Token con formato válido, continuar hacia el microservicio correspondiente
             return chain.filter(exchange);
         };
     }
     
     public static class Config {
-        // Configuración del filtro
+        // Configuración interna del filtro
     }
 }
