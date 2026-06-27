@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
 import api from './api/api';
 import './App.css';
-import { AuthContext } from './AuthContext'; // <-- IMPORTAMOS EL CONTEXTO
-import Login from './Login'; // <-- IMPORTAMOS TU NUEVA PANTALLA
+import { AuthContext } from './AuthContext';
+import Login from './Login';
 
 function App() {
-  // Consumimos el estado global de autenticación
   const { isAuthenticated, logout } = useContext(AuthContext);
 
   const [patients, setPatients] = useState([]);
@@ -19,6 +18,16 @@ function App() {
     priority: '1', 
     type: 'request' 
   });
+
+  // Función para formatear RUT de forma pro (12.345.678-K)
+  const formatRut = (rawRut) => {
+    if (!rawRut) return "N/A";
+    let clean = rawRut.replace(/[^0-9kK]/g, '');
+    if (clean.length < 2) return clean;
+    let dv = clean.slice(-1).toUpperCase();
+    let nums = clean.slice(0, -1);
+    return nums.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "-" + dv;
+  };
 
   const fetchData = async () => {
     try {
@@ -34,7 +43,6 @@ function App() {
     }
   };
 
-  // Solo ejecuta la carga de datos si el usuario está realmente autenticado
   useEffect(() => { 
     if (isAuthenticated) {
       fetchData(); 
@@ -59,7 +67,7 @@ function App() {
             priority: parseInt(formData.priority)
           }
         });
-        alert("Paciente añadido a la Lista de Espera (201 Created)");
+        alert("Paciente añadido a la Lista de Espera");
       }
 
       setFormData({ patientId: '', specialty: '', description: '', priority: '1', type: 'request' });
@@ -69,95 +77,145 @@ function App() {
     }
   };
 
-  // --- REGRESO DE GUARDIA ---
-  // Si no está autenticado, la app se detiene aquí y muestra el Login de forma obligatoria
   if (!isAuthenticated) {
     return <Login />;
   }
 
-  // Si está autenticado, renderiza el panel normal
   return (
-    <div className="container">
-      <header style={{ display: 'flex', justifyContent: 'between', alignItems: 'center', width: '100%' }}>
-        <h1>RedSalud - Panel de Gestión</h1>
-        <button onClick={logout} style={{ backgroundColor: '#ef4444', color: 'white', border: 'none', padding: '10px 15px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-          🚪 Cerrar Sesión
+    <>
+      {/* BARRA DE NAVEGACIÓN CORPORATIVA REDSALUD NORTE */}
+      <nav className="navbar">
+        <div className="brand">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#007f8c"/>
+          </svg>
+          <h1>RedSalud <span>Norte</span></h1>
+        </div>
+        <button onClick={logout} className="btn-logout">
+          Cerrar Sesión
         </button>
-      </header>
+      </nav>
 
-      {/* FORMULARIO */}
-      <section className="card form-section">
-        <h2>📝 Registrar Nueva Acción Médica</h2>
-        <form onSubmit={handleSubmit} className="form-inline">
-          <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
-            <option value="request">Generar Solicitud</option>
-            <option value="waiting">Ingresar a Lista de Espera</option>
-          </select>
-
-          <input type="number" placeholder="ID Paciente" value={formData.patientId} 
-            onChange={e => setFormData({...formData, patientId: e.target.value})} required />
-          
-          <input type="text" placeholder="Especialidad" value={formData.specialty} 
-            onChange={e => setFormData({...formData, specialty: e.target.value})} required />
-          
-          {formData.type === 'request' ? (
-            <input type="text" placeholder="Descripción" value={formData.description} 
-              onChange={e => setFormData({...formData, description: e.target.value})} required />
-          ) : (
-            <select value={formData.priority} onChange={e => setFormData({...formData, priority: e.target.value})}>
-              <option value="1">Prioridad 1 (Alta)</option>
-              <option value="2">Prioridad 2 (Media)</option>
-              <option value="3">Prioridad 3 (Baja)</option>
+      <div className="container">
+        {/* SECCIÓN DE REGISTRO */}
+        <section className="card form-section">
+          <h2 className="section-title">📝 Registrar Nueva Acción Médica</h2>
+          <form onSubmit={handleSubmit} className="form-inline">
+            <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
+              <option value="request">Generar Solicitud</option>
+              <option value="waiting">Ingresar a Lista de Espera</option>
             </select>
-          )}
 
-          <button type="submit">Enviar Registro</button>
-        </form>
-      </section>
+            <input type="number" placeholder="ID Paciente" value={formData.patientId} 
+              onChange={e => setFormData({...formData, patientId: e.target.value})} required />
+            
+            <input type="text" placeholder="Especialidad" value={formData.specialty} 
+              onChange={e => setFormData({...formData, specialty: e.target.value})} required />
+            
+            {formData.type === 'request' ? (
+              <input type="text" placeholder="Descripción" value={formData.description} 
+                onChange={e => setFormData({...formData, description: e.target.value})} required />
+            ) : (
+              <select value={formData.priority} onChange={e => setFormData({...formData, priority: e.target.value})}>
+                <option value="1">Prioridad 1 (Alta)</option>
+                <option value="2">Prioridad 2 (Media)</option>
+                <option value="3">Prioridad 3 (Baja)</option>
+              </select>
+            )}
 
-      {/* GRID DE TABLAS */}
-      <div className="grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-        <section className="card">
-          <h2>🏥 Pacientes</h2>
-          <table>
-            <thead><tr><th>ID</th><th>Nombre</th><th>RUT</th></tr></thead>
-            <tbody>
-              {patients.map(p => (<tr key={p.id}><td>{p.id}</td><td>{p.firstName} {p.lastName}</td><td>{p.rut}</td></tr>))}
-            </tbody>
-          </table>
+            <button type="submit">Enviar Registro</button>
+          </form>
         </section>
 
-        <section className="card">
-          <h2>📑 Solicitudes</h2>
-          <table>
-            <thead><tr><th>Paciente</th><th>Especialidad</th><th>Estado</th></tr></thead>
-            <tbody>
-              {requests.map(r => (<tr key={r.id}><td>{r.patientId}</td><td>{r.medicalSpecialty}</td><td>{r.status}</td></tr>))}
-            </tbody>
-          </table>
-        </section>
+        {/* CONTENEDOR DASHBOARD UNIFICADO */}
+        <div className="grid-dashboard">
+          
+          {/* TABLA PACIENTES */}
+          <section className="card">
+            <h2 className="section-title">🏥 Control de Pacientes</h2>
+            <div className="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nombre Completo</th>
+                    <th>RUT</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {patients.map(p => (
+                    <tr key={p.id}>
+                      <td><strong>{p.id}</strong></td>
+                      <td>{p.firstName} {p.lastName}</td>
+                      <td>
+                        <span className="rut-chip">{formatRut(p.rut)}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
 
-        <section className="card">
-          <h2>⏳ Lista de Espera</h2>
-          <table>
-            <thead><tr><th>ID Paciente</th><th>Especialidad</th><th>Prioridad</th></tr></thead>
-            <tbody>
-              {waitingList.map(w => (
-                <tr key={w.id}>
-                  <td>{w.patientId}</td>
-                  <td>{w.medicalSpecialty}</td>
-                  <td>
-                    <span className={`badge priority-${w.priority}`}>
-                      {w.priority === 1 ? 'Alta' : w.priority === 2 ? 'Media' : 'Baja'}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
+          {/* TABLA SOLICITUDES */}
+          <section className="card">
+            <h2 className="section-title">📑 Solicitudes Activas</h2>
+            <div className="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID Pac.</th>
+                    <th>Especialidad Médica</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {requests.map(r => (
+                    <tr key={r.id}>
+                      <td>{r.patientId}</td>
+                      <td>{r.medicalSpecialty}</td>
+                      <td>
+                        <span className="badge status-active">{r.status || 'PENDIENTE'}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {/* TABLA LISTA DE ESPERA */}
+          <section className="card">
+            <h2 className="section-title">⏳ Lista de Espera</h2>
+            <div className="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID Pac.</th>
+                    <th>Especialidad Médica</th>
+                    <th>Nivel Urgencia</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {waitingList.map(w => (
+                    <tr key={w.id}>
+                      <td>{w.patientId}</td>
+                      <td>{w.medicalSpecialty}</td>
+                      <td>
+                        <span className={`badge priority-${w.priority}`}>
+                          {w.priority === 1 ? 'Alta' : w.priority === 2 ? 'Media' : 'Baja'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
