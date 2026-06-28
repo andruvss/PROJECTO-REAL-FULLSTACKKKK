@@ -1,5 +1,6 @@
 package com.redsalud.waiting_list_service;
 
+import com.redsalud.waiting_list.WaitingListServiceApplication;
 import com.redsalud.waiting_list.model.WaitingList;
 import com.redsalud.waiting_list.repository.WaitingListRepository;
 import com.redsalud.waiting_list.service.WaitingListService;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@SpringBootTest(classes = WaitingListServiceApplication.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class WaitingListServiceTest {
