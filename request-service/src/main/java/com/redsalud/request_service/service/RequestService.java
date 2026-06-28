@@ -17,11 +17,16 @@ public class RequestService {
     private RequestRepository requestRepository;
     
     public Request createRequest(Request request) {
+        // Solo validamos lo que el usuario debe enviar
+        // status y registrationDate los genera @PrePersist automáticamente
+        if (request.getPatientId() == null || request.getPatientId() <= 0) {
+            throw new IllegalArgumentException("Patient ID is required and must be positive");
+        }
+        if (request.getMedicalSpecialty() == null || request.getMedicalSpecialty().trim().isEmpty()) {
+            throw new IllegalArgumentException("Medical specialty is required");
+        }
         if (request.getDescription() == null || request.getDescription().trim().isEmpty()) {
             throw new IllegalArgumentException("Description is required");
-        }
-        if (request.getStatus() == null || request.getStatus().trim().isEmpty()) {
-            throw new IllegalArgumentException("Status is required");
         }
         return requestRepository.save(request);
     }
@@ -46,6 +51,9 @@ public class RequestService {
         }
         if (requestDetails.getStatus() != null && !requestDetails.getStatus().trim().isEmpty()) {
             request.setStatus(requestDetails.getStatus());
+        }
+        if (requestDetails.getMedicalSpecialty() != null && !requestDetails.getMedicalSpecialty().trim().isEmpty()) {
+            request.setMedicalSpecialty(requestDetails.getMedicalSpecialty());
         }
         return requestRepository.save(request);
     }

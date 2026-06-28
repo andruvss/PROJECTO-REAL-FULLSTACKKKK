@@ -15,29 +15,19 @@ public class WaitingListController {
     @Autowired
     private WaitingListService service;
 
-    // Recibimos los parámetros limpios desde la URL individuales para evitar conflictos de mapeo
+    // Recibe JSON body desde el frontend React
     @PostMapping
-    public ResponseEntity<WaitingList> add(
-            @RequestParam Long patientId,
-            @RequestParam String medicalSpecialty,
-            @RequestParam Integer priority) {
-        
-        // Construimos la entidad de forma segura asignando únicamente lo necesario
-        WaitingList entry = new WaitingList();
-        entry.setPatientId(patientId);
-        entry.setMedicalSpecialty(medicalSpecialty);
-        entry.setPriority(priority);
-        
-        // El servicio lo guarda, el @PrePersist genera la fecha y la BD asigna el ID automáticamente
+    public ResponseEntity<WaitingList> add(@RequestBody WaitingList entry) {
         WaitingList savedEntry = service.addToWaitingList(entry);
-        return new ResponseEntity<>(savedEntry, HttpStatus.CREATED); // Retorna 201 Created
+        return new ResponseEntity<>(savedEntry, HttpStatus.CREATED);
     }
 
+    // Filtros opcionales por patientId y medicalSpecialty
     @GetMapping
     public ResponseEntity<List<?>> getAll(
-            @RequestParam(required = false) Long id, 
-            @RequestParam(required = false) String filter) {
-        
-        return ResponseEntity.ok(service.getAllEntries(id, filter));    
+            @RequestParam(required = false) Long patientId,
+            @RequestParam(required = false) String medicalSpecialty) {
+
+        return ResponseEntity.ok(service.getAllEntries(patientId, medicalSpecialty));
     }
 }
